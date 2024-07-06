@@ -1,9 +1,19 @@
 package org.Jona;
 
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.ui.layout.HierarchicalLayout;
-import org.graphstream.ui.view.Viewer;
+
+import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
+import guru.nidi.graphviz.model.MutableGraph;
+import org.apache.commons.math3.util.Pair;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static guru.nidi.graphviz.model.Factory.mutGraph;
+import static guru.nidi.graphviz.model.Factory.mutNode;
+
 
 public class KnapsackSolver {
 
@@ -11,22 +21,19 @@ public class KnapsackSolver {
     private int capacity;
     private int bestProfit;
     private boolean[] bestItems;
-    private Graph decisionTree;
+    private Queue<String> Nodes;
+    private Queue<Pair<String, String>> Edges;
     private int nodeIdCounter;
+
 
     public KnapsackSolver(KnapsackItem[] items, int capacity) {
         this.items = items;
         this.capacity = capacity;
         this.bestProfit = 0;
         this.bestItems = new boolean[items.length];
-        this.decisionTree = new SingleGraph("BBTree");
-        HierarchicalLayout hl = new HierarchicalLayout();
-        decisionTree.setAttribute("ui.stylesheet", "node{\n" +
-                "    size: 30px, 30px;\n" +
-                "    fill-color: #f7f7f0;\n" +
-                "    text-mode: normal; \n" +
-                "}");
         this.nodeIdCounter = 0;
+        this.Nodes = new ConcurrentLinkedQueue<>();
+        this.Edges = new ConcurrentLinkedQueue<>();
     }
 
     public void solve(KnapsackItem[] items) {
@@ -35,8 +42,7 @@ public class KnapsackSolver {
         for (int i = 0; i < items.length; i++) {
             indices[i] = i;
         }
-        String rootNode = createNodeLabel(0, 0, 0);
-        decisionTree.addNode(rootNode);
+        String rootNode = new String(createNodeLabel(0, 0, 0));
         branchAndBound(I, 0, 0, 0, new boolean[items.length], rootNode);
     }
 
@@ -53,24 +59,20 @@ public class KnapsackSolver {
         if (index == items.length) {
             return;
         }
-        String leftNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
-        //if (currentWeight + items[index].getRuntime() <= capacity) {
-            leftNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
-            decisionTree.addNode(leftNode).setAttribute("ui.label", leftNode);;
-            decisionTree.addEdge(parentNode + leftNode,parentNode, leftNode).setAttribute("ui.label", parentNode +"not taken");;
-      //  }
+//
+            String leftNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
+            Nodes.add(leftNode);
+            Edges.add(Pair.create(parentNode, leftNode));
 
-      //  if (currentWeight + items[index].getRuntime() <= capacity) {
-
-
-       //}
         // Branch without including the current item
+
         branchAndBound(items, index + 1, currentWeight, currentProfit, currentItemSelection, leftNode);
-        String rightNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
+        //String rightNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
         if (currentWeight + items[index].getRuntime() <= capacity) {
-            rightNode = createNodeLabel(nodeIdCounter++, currentWeight+ items[index].getRuntime(), currentProfit + items[index].getValue());
-            decisionTree.addNode(rightNode).setAttribute("ui.label", rightNode);;
-            decisionTree.addEdge(parentNode + rightNode,parentNode, rightNode).setAttribute("ui.label", parentNode +"taken");;
+          String  rightNode = createNodeLabel(nodeIdCounter++, currentWeight +items[index].getRuntime() , currentProfit + items[index].getValue());
+            Nodes.add(rightNode);
+            Edges.add(Pair.create(parentNode, rightNode));
+
 
             // Branch including the current item
             currentItemSelection[index] = true;
@@ -93,10 +95,18 @@ public class KnapsackSolver {
     }
 
 
-    public void drawDecisionTree() {
-       Viewer viewer = decisionTree.display();
-       //viewer.disableAutoLayout();
+    public void drawDecisionTree() throws IOException {
+        MutableGraph g = mutGraph("example1").setDirected(true).use((gr, ctx) -> {
+            for(int i = 0; i < Nodes.size(); ++i ){
+                mutNode(Nodes.remove());
+            }
+           for(int i = 0; i < Edges.size(); ++i ){
+               mutNode(Edges.peek().getKey()).addLink(mutNode(Edges.remove().getValue()));
+           }
+
+        });
+
+        Graphviz.fromGraph(g).width(2000).render(Format.PNG).toFile(new File("/home/jona/IdeaProjects/KnapsackSolver/src/main/java/org/Jona/ex1i.png"));
+
     }
-
-
 }

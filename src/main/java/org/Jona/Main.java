@@ -1,7 +1,9 @@
 package org.Jona;
 
+import java.io.IOException;
+
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.setProperty("org.graphstream.ui", "swing");
 
         KnapsackItem[] items = {
@@ -26,7 +28,11 @@ public class Main {
 
 
         }
-        solver.drawDecisionTree();
+        try {
+            solver.drawDecisionTree();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
