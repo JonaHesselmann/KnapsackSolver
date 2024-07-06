@@ -1,14 +1,9 @@
 package org.Jona;
 
-import com.mxgraph.swing.mxGraphComponent;
-import org.jgrapht.Graph;
-import org.jgrapht.ext.JGraphXAdapter;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
-
-import javax.swing.*;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.layout.HierarchicalLayout;
+import org.graphstream.ui.view.Viewer;
 
 public class KnapsackSolver {
 
@@ -16,7 +11,7 @@ public class KnapsackSolver {
     private int capacity;
     private int bestProfit;
     private boolean[] bestItems;
-    private Graph<String, DefaultEdge> decisionTree;
+    private Graph decisionTree;
     private int nodeIdCounter;
 
     public KnapsackSolver(KnapsackItem[] items, int capacity) {
@@ -24,7 +19,13 @@ public class KnapsackSolver {
         this.capacity = capacity;
         this.bestProfit = 0;
         this.bestItems = new boolean[items.length];
-        this.decisionTree = new DefaultDirectedGraph<>(DefaultEdge.class);
+        this.decisionTree = new SingleGraph("BBTree");
+        HierarchicalLayout hl = new HierarchicalLayout();
+        decisionTree.setAttribute("ui.stylesheet", "node{\n" +
+                "    size: 30px, 30px;\n" +
+                "    fill-color: #f7f7f0;\n" +
+                "    text-mode: normal; \n" +
+                "}");
         this.nodeIdCounter = 0;
     }
 
@@ -35,7 +36,7 @@ public class KnapsackSolver {
             indices[i] = i;
         }
         String rootNode = createNodeLabel(0, 0, 0);
-        decisionTree.addVertex(rootNode);
+        decisionTree.addNode(rootNode);
         branchAndBound(I, 0, 0, 0, new boolean[items.length], rootNode);
     }
 
@@ -54,10 +55,10 @@ public class KnapsackSolver {
         }
         String leftNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
         //if (currentWeight + items[index].getRuntime() <= capacity) {
-
-            decisionTree.addVertex(leftNode);
-            decisionTree.addEdge(parentNode, leftNode);
-       // }
+            leftNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
+            decisionTree.addNode(leftNode).setAttribute("ui.label", leftNode);;
+            decisionTree.addEdge(parentNode + leftNode,parentNode, leftNode).setAttribute("ui.label", parentNode +"not taken");;
+      //  }
 
       //  if (currentWeight + items[index].getRuntime() <= capacity) {
 
@@ -68,8 +69,8 @@ public class KnapsackSolver {
         String rightNode = createNodeLabel(nodeIdCounter++, currentWeight, currentProfit);
         if (currentWeight + items[index].getRuntime() <= capacity) {
             rightNode = createNodeLabel(nodeIdCounter++, currentWeight+ items[index].getRuntime(), currentProfit + items[index].getValue());
-            decisionTree.addVertex(rightNode);
-            decisionTree.addEdge(parentNode, rightNode);
+            decisionTree.addNode(rightNode).setAttribute("ui.label", rightNode);;
+            decisionTree.addEdge(parentNode + rightNode,parentNode, rightNode).setAttribute("ui.label", parentNode +"taken");;
 
             // Branch including the current item
             currentItemSelection[index] = true;
@@ -93,44 +94,8 @@ public class KnapsackSolver {
 
 
     public void drawDecisionTree() {
-        JGraphXAdapter<String, DefaultEdge> graphAdapter = new JGraphXAdapter<>(decisionTree);
-        mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
-
-        mxHierarchicalLayout layout = new mxHierarchicalLayout(graphAdapter);
-        layout.setIntraCellSpacing(40);
-
-        layout.setInterHierarchySpacing(70);
-        layout.setParentBorder(7000);
-
-
-//        layout.setInterRankCellSpacing(70);
-//        layout.setParallelEdgeSpacing(70);
-        layout.execute(graphAdapter.getDefaultParent());
-
-        // Adding mouse wheel listener for zoom functionality
-        graphComponent.getGraphControl().addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if (e.getWheelRotation() < 0) {
-                    graphComponent.zoomIn();
-                } else {
-                    graphComponent.zoomOut();
-                }
-            }
-        });
-        // Set initial scale
-        graphComponent.zoomTo(2.0, true); // Initial zoom level set to 200%
-
-        // Increase the preferred size of the graph component
-        graphComponent.setGridVisible(true);
-
-
-        JFrame frame = new JFrame();
-        frame.getContentPane().add(graphComponent);
-        frame.setTitle("Branch and Bound Decision Tree");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
+       Viewer viewer = decisionTree.display();
+       //viewer.disableAutoLayout();
     }
 
 
