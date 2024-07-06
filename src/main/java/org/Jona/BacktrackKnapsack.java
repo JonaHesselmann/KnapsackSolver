@@ -25,7 +25,7 @@ class Node {
     }
 }
 
-public class KnapsackBranchAndBound {
+public class BacktrackKnapsack {
     static Comparator<Item> itemComparator = (a, b) -> {
         double ratio1 = (double) a.value / a.weight;
         double ratio2 = (double) b.value / b.weight;

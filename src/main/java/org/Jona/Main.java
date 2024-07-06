@@ -7,12 +7,15 @@ public class Main {
         System.setProperty("org.graphstream.ui", "swing");
 
         KnapsackItem[] items = {
-                new KnapsackItem(4, 40),
-                new KnapsackItem(7, 42),
-                new KnapsackItem(5, 25),
-                new KnapsackItem(3, 12)
+                //Dont remove First Item idk why
+                new KnapsackItem(0, 0),
+                //Dont remove
+                new KnapsackItem(2, 40),
+                new KnapsackItem(5, 30),
+                new KnapsackItem(10, 50),
+                new KnapsackItem(5, 10),
         };
-        int capacity = 10;
+        int capacity = 16;
 
         KnapsackSolver solver = new KnapsackSolver(items, capacity);
         solver.solve(items);
