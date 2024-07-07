@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+// Implementation Reference https://www.geeksforgeeks.org/0-1-knapsack-using-branch-and-bound/
 
 class Node {
     int level, profit, bound;

@@ -4,11 +4,12 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
+        //Algorithm Toggle
         boolean choice = false;
         KnapsackItem[] items = {
-                //Dont remove First Item for Backtracking idk why
+                //Dont remove First Item for Backtracking idk why alway add it before using
 
-                //new KnapsackItem(0, 0),
+                new KnapsackItem(0, 0),
                 //Dont remove
                 new KnapsackItem(2, 40),
                 new KnapsackItem(5, 30),
@@ -16,7 +17,7 @@ public class Main {
                 new KnapsackItem(5, 10),
         };
         int capacity = 16;
-        if (choice == false) {
+        if (choice == true) {
             //Calculate using BB
             BBKnapsack BNS = new BBKnapsack();
             BNS.calcBB(capacity, items);
