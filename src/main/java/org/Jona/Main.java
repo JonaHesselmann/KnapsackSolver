@@ -4,11 +4,11 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        System.setProperty("org.graphstream.ui", "swing");
-
+        boolean choice = false;
         KnapsackItem[] items = {
-                //Dont remove First Item idk why
-                new KnapsackItem(0, 0),
+                //Dont remove First Item for Backtracking idk why
+
+                //new KnapsackItem(0, 0),
                 //Dont remove
                 new KnapsackItem(2, 40),
                 new KnapsackItem(5, 30),
@@ -16,25 +16,27 @@ public class Main {
                 new KnapsackItem(5, 10),
         };
         int capacity = 16;
+        if (choice == false) {
+            //Calculate using BB
+            BBKnapsack BNS = new BBKnapsack();
+            BNS.calcBB(capacity, items);
+        } else {
+            // Calc using Backtracking
+            KnapsackSolver solver = new KnapsackSolver(items, capacity);
+            solver.solve(items);
 
-        KnapsackSolver solver = new KnapsackSolver(items, capacity);
-        solver.solve(items);
-
-        System.out.println("Best Profit: " + solver.getBestProfit());
-        boolean[] bestItems = solver.getBestItems();
-        for (int i = 0; i < bestItems.length; i++) {
-            if (bestItems[i]) {
+            System.out.println("Best Profit: " + solver.getBestProfit());
+            boolean[] bestItems = solver.getBestItems();
+            for (int i = 0; i < bestItems.length; i++) {
                 if (bestItems[i]) {
-                    System.out.println("Item " + i + ": " + items[i]);
+                    if (bestItems[i]) {
+                        System.out.println("Item " + i + ": " + items[i]);
+                    }
                 }
+
+
             }
-
-
-        }
-        try {
-            solver.drawDecisionTree();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            solver.renderTree();
         }
     }
 }
